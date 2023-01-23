@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "5jxapZfwjSUc0zhA3ExxTIO0ikDRh5CwNQbjjg1rTpA=",
+  "Source": "oodb-mongo-server",
+  "BasePath": "_content/oodb-mongo-server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
