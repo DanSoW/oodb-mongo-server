@@ -4,6 +4,9 @@ using oodb_project.models;
 
 namespace oodb_mongo_server.database.context
 {
+    /// <summary>
+    /// Класс, реализующий интерфейс контекста MongoDB
+    /// </summary>
     public class DbContext : IDbContext
     {
         private readonly IMongoDatabase _db;
@@ -11,8 +14,6 @@ namespace oodb_mongo_server.database.context
         {
             var client = new MongoClient(config.ConnectionString);
             _db = client.GetDatabase(config.Database);
-
-            // Console.WriteLine(config.ConnectionString);
         }
 
         public IMongoCollection<AdminModel>? AdminList => _db.GetCollection<AdminModel>("AdminList");

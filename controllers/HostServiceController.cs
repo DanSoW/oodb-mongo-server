@@ -4,8 +4,20 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using oodb_mongo_server.controllers;
 
+/*
+ * В данном файле представлен класс HostServiceController, 
+ * который является наследником абстрактного класса BaseController.
+ * Тип "входной" модели для данных, курсирующих внутри системы является HostServiceModel
+ * Тип "выходной" модели для данных, возвращаемых пользователю является HostServiceDataModel
+ * В данном классе переопределены методы Create, Update, Delete, Get и GetAll (т.е. все CRUD-операции), 
+ * так как логика отдельных операций для данного класса отличается от общей схемы (определяемая абстрактным классом)
+ * **/
+
 namespace oodb_project.controllers
 {
+    /// <summary>
+    /// Класс контроллера для таблицы HostService
+    /// </summary>
     public class HostServiceController : BaseController<HostServiceModel, HostServiceDataModel>
     {
         private DbContext _db;
@@ -16,9 +28,11 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Обновление объекта HostServiceModel
+        /// Обновление объекта коллекции
         /// </summary>
-        public IResult Update(HostServiceDataModel newData)
+        /// <param name="data">Данные коллекции</param>
+        /// <returns>Обновлённый объект коллекции</returns>
+        public IResult Update(HostServiceDataModel data)
         {
             if (_collection == null)
             {
@@ -27,25 +41,28 @@ namespace oodb_project.controllers
 
             try
             {
-                var hostService = _collection.Find(document => document.Id == ObjectId.Parse(newData.Id)).FirstOrDefault();
+                // Поиск объекта в коллекции HostService
+                var hostService = _collection.Find(document => document.Id == ObjectId.Parse(data.Id)).FirstOrDefault();
                 if (hostService == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта HostService с Id = {newData.Id} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта HostService с Id = {data.Id} не обнаружен в БД"));
                 }
 
-                var host = _db.HostList.Find(document => document.Id == ObjectId.Parse(newData.HostId)).FirstOrDefault();
+                // Поиск объекта в коллекции Host
+                var host = _db.HostList.Find(document => document.Id == ObjectId.Parse(data.HostId)).FirstOrDefault();
                 if (host == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта HostModel с Id = {newData.HostId} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта HostModel с Id = {data.HostId} не обнаружен в БД"));
                 }
 
-                var service = _db.ServiceList.Find(document => document.Id == ObjectId.Parse(newData.ServiceId)).FirstOrDefault();
+                // Поиск объекта в коллекции Service
+                var service = _db.ServiceList.Find(document => document.Id == ObjectId.Parse(data.ServiceId)).FirstOrDefault();
                 if (service == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта ServiceModel с Id = {newData.ServiceId} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта ServiceModel с Id = {data.ServiceId} не обнаружен в БД"));
                 }
 
-                var filter = Builders<HostServiceModel>.Filter.Eq(s => s.Id, ObjectId.Parse(newData.Id));
+                var filter = Builders<HostServiceModel>.Filter.Eq(s => s.Id, ObjectId.Parse(data.Id));
                 var update = Builders<HostServiceModel>.Update
                     .Set(s => s.Host, host)
                     .Set(s => s.Service, service);
@@ -57,13 +74,15 @@ namespace oodb_project.controllers
                 return Results.Json(new MessageModel(e.Message));
             }
 
-            return Results.Json(newData);
+            return Results.Json(data);
         }
 
         /// <summary>
-        /// Создание объекта HostServiceModel
+        /// Создание объекта коллекции
         /// </summary>
-        public IResult Create(HostServiceDataModel data)
+        /// <param name="data">Данные объекта</param>
+        /// <returns>Созданный объект</returns>
+        public new IResult Create(HostServiceDataModel data)
         {
             if ((_collection == null) || (_db == null))
             {
@@ -98,8 +117,10 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Получение объекта
+        /// Получение конкретного объекта коллекции
         /// </summary>
+        /// <param name="id">Идентификатор объекта в коллекции</param>
+        /// <returns>Объект коллекции</returns>
         public new IResult Get(string id)
         {
             if (_collection == null)
@@ -129,8 +150,9 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Получение всех объектов MonitorAppModel
+        /// Получение списка объектов в коллекции
         /// </summary>
+        /// <returns>Список объектов в коллекции</returns>
         public new IResult GetAll()
         {
             if (_collection == null)

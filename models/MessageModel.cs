@@ -1,5 +1,8 @@
 ﻿namespace oodb_project.models
 {
+    /// <summary>
+    /// Модель сообщений
+    /// </summary>
     public class MessageModel
     {
         public MessageModel()

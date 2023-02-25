@@ -4,8 +4,23 @@ using oodb_mongo_server.controllers;
 using oodb_mongo_server.database.context;
 using oodb_project.models;
 
+/*
+ * В данном файле представлен класс DataSource, 
+ * который является наследником абстрактного класса BaseController.
+ * Тип "входной" модели для данных, курсирующих внутри системы является DataSourceModel
+ * Тип "выходной" модели для данных, возвращаемых пользователю является DataSourceDataModel
+ * В данном классе переопределены методы Update и Delete, т.к. логика данных методов
+ * может различаться от класса к классу и не подлежит обобщению в рамках текущей системы.
+ * Также в данном классе переопределён метод Create, т.к. требуется явное указание параметров
+ * метода при отправки его контроллеру.
+ * Методы Get, GetAll не переопределены и используются из абстрактного класса.
+ * **/
+
 namespace oodb_project.controllers
 {
+    /// <summary>
+    /// Класс контроллера для таблицы DataSource
+    /// </summary>
     public class DataSourceController : BaseController<DataSourceModel, DataSourceDataModel>
     {
         private DbContext _db;
@@ -16,9 +31,11 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Обновление объекта DataSourceModel
+        /// Обновление объекта коллекции
         /// </summary>
-        public IResult Update(DataSourceDataModel newData)
+        /// <param name="data">Новые данные для объекта в коллекции</param>
+        /// <returns>Обновлённый объект коллекции</returns>
+        public IResult Update(DataSourceDataModel data)
         {
             if (_collection == null)
             {
@@ -27,43 +44,18 @@ namespace oodb_project.controllers
 
             try
             {
-                var dataSource = _collection.Find(document => document.Id == ObjectId.Parse(newData.Id)).FirstOrDefault();
+                var dataSource = _collection.Find(document => document.Id == ObjectId.Parse(data.Id)).FirstOrDefault();
                 if (dataSource == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта DataSource с Id = {newData.Id} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта DataSource с Id = {data.Id} не обнаружен в БД"));
                 }
 
-                var filter = Builders<DataSourceModel>.Filter.Eq(s => s.Id, ObjectId.Parse(newData.Id));
+                var filter = Builders<DataSourceModel>.Filter.Eq(s => s.Id, ObjectId.Parse(data.Id));
                 var update = Builders<DataSourceModel>.Update
-                    .Set(s => s.Url, newData.Url)
-                    .Set(s => s.Name, newData.Name);
+                    .Set(s => s.Url, data.Url)
+                    .Set(s => s.Name, data.Name);
 
                 _collection.UpdateOne(filter, update);
-            }
-            catch (Exception e)
-            {
-                return Results.Json(new MessageModel(e.Message));
-            }
-
-            return Results.Json(newData);
-        }
-
-        /// <summary>
-        /// Создание объекта DataSourceModel
-        /// </summary>
-        public IResult Create(DataSourceDataModel data)
-        {
-            if (_collection == null)
-            {
-                return Results.Json(new MessageModel("Подключение к ООБД отсутствует"));
-            }
-
-            try
-            {
-                var entity = new DataSourceModel(data.Name, data.Url);
-                data.Id = entity.Id.ToString();
-
-                _collection.InsertOne(entity);
             }
             catch (Exception e)
             {
@@ -74,10 +66,20 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Метод для удаления модели
+        /// Создание объекта в коллекции
         /// </summary>
-        /// <param name="id">Идентификатор модели</param>
-        /// <returns>Удалённая модель (данные, которые были до удаления в модели)</returns>
+        /// <param name="data">Данные объекта</param>
+        /// <returns>Созданный объект</returns>
+        public new IResult Create(DataSourceDataModel data)
+        {
+            return base.Create(data);
+        }
+
+        /// <summary>
+        /// Удаление объекта коллекции
+        /// </summary>
+        /// <param name="id">Идентификатор объекта</param>
+        /// <returns>Удалённый объект</returns>
         public new IResult Delete(string id)
         {
             if ((_collection == null) 

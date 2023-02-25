@@ -1,5 +1,8 @@
 ﻿namespace oodb_mongo_server.database.config
 {
+    /// <summary>
+    /// Класс, реализующий интерфейс конфигурации MongoDB
+    /// </summary>
     public class MongoDbConfig : IMongoDbConfig
     {
         public MongoDbConfig(IConfiguration? config)

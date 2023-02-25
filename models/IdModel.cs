@@ -4,7 +4,8 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace oodb_mongo_server.models
 {
     /// <summary>
-    /// Абстрактный класс для всех моделей
+    /// Абстрактный класс модели входных данных.
+    /// Используется для обобщения типов входных данных используемых внутри сервиса
     /// </summary>
     public abstract class IdModel
     {

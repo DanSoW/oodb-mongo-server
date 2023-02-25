@@ -4,6 +4,15 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using oodb_mongo_server.controllers;
 
+/*
+ * В данном файле представлен класс ServiceController, 
+ * который является наследником абстрактного класса BaseController.
+ * Тип "входной" модели для данных, курсирующих внутри системы является ServiceModel
+ * Тип "выходной" модели для данных, возвращаемых пользователю является ServiceDataModel
+ * В данном классе переопределены методы Create, Update, Delete, Get и GetAll (т.е. все CRUD-операции), 
+ * так как логика отдельных операций для данного класса отличается от общей схемы (определяемая абстрактным классом)
+ * **/
+
 namespace oodb_project.controllers
 {
     public class ServiceController : BaseController<ServiceModel, ServiceDataModel>
@@ -16,9 +25,11 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Обновление объекта ServiceModel
+        /// Обновление объекта коллекции
         /// </summary>
-        public IResult Update(ServiceDataModel newData)
+        /// <param name="data">Данные об объекте</param>
+        /// <returns>Обновлённый объект</returns>
+        public IResult Update(ServiceDataModel data)
         {
             if (_collection == null)
             {
@@ -27,25 +38,25 @@ namespace oodb_project.controllers
 
             try
             {
-                var service = _db.ServiceList.Find(document => document.Id == ObjectId.Parse(newData.Id)).FirstOrDefault();
+                var service = _db.ServiceList.Find(document => document.Id == ObjectId.Parse(data.Id)).FirstOrDefault();
 
                 if (service == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта ServiceModel с Id = {newData.Id} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта ServiceModel с Id = {data.Id} не обнаружен в БД"));
                 }
 
-                var dataSource = _db.DataSourceList.Find(document => document.Id == ObjectId.Parse(newData.DataSourceId)).FirstOrDefault();
+                var dataSource = _db.DataSourceList.Find(document => document.Id == ObjectId.Parse(data.DataSourceId)).FirstOrDefault();
 
                 if (dataSource == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта DataSourceModel с Id = {newData.DataSourceId} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта DataSourceModel с Id = {data.DataSourceId} не обнаружен в БД"));
                 }
 
-                var filter = Builders<ServiceModel>.Filter.Eq(s => s.Id, ObjectId.Parse(newData.Id));
+                var filter = Builders<ServiceModel>.Filter.Eq(s => s.Id, ObjectId.Parse(data.Id));
                 var update = Builders<ServiceModel>.Update
-                    .Set(s => s.Name, newData.Name)
-                    .Set(s => s.Port, newData.Port)
-                    .Set(s => s.TimeUpdate, newData.TimeUpdate)
+                    .Set(s => s.Name, data.Name)
+                    .Set(s => s.Port, data.Port)
+                    .Set(s => s.TimeUpdate, data.TimeUpdate)
                     .Set(s => s.DataSource, dataSource);
 
                 _collection.UpdateOne(filter, update);
@@ -55,13 +66,15 @@ namespace oodb_project.controllers
                 return Results.Json(new MessageModel(e.Message));
             }
 
-            return Results.Json(newData);
+            return Results.Json(data);
         }
 
         /// <summary>
-        /// Создание объекта ServiceModel
+        /// Создание нового объекта
         /// </summary>
-        public IResult Create(ServiceDataModel data)
+        /// <param name="data">Данные объекта</param>
+        /// <returns>Созданный объект</returns>
+        public new IResult Create(ServiceDataModel data)
         {
             if (_collection == null)
             {
@@ -91,8 +104,10 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Получение объекта
+        /// Получение объекта коллекции
         /// </summary>
+        /// <param name="id">Идентификатор объекта в коллекции</param>
+        /// <returns>Объект коллекции</returns>
         public new IResult Get(string id)
         {
             if (_collection == null)
@@ -120,8 +135,9 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Получение всех объектов MonitorAppModel
+        /// Получение списка объектов коллекции
         /// </summary>
+        /// <returns>Список объектов коллекции</returns>
         public new IResult GetAll()
         {
             if (_collection == null)
@@ -148,10 +164,10 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Метод для удаления модели
+        /// Удаление объекта в коллекции
         /// </summary>
-        /// <param name="id">Идентификатор модели</param>
-        /// <returns>Удалённая модель (данные, которые были до удаления в модели)</returns>
+        /// <param name="id">Идентификатор объекта в коллекции</param>
+        /// <returns>Удалённый объект коллекции</returns>
         public new IResult Delete(string id)
         {
             if ((_collection == null) || (_db.HostServiceList == null))

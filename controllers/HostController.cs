@@ -4,8 +4,23 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using oodb_mongo_server.controllers;
 
+/*
+ * В данном файле представлен класс HostController, 
+ * который является наследником абстрактного класса BaseController.
+ * Тип "входной" модели для данных, курсирующих внутри системы является HostModel
+ * Тип "выходной" модели для данных, возвращаемых пользователю является HostDataModel
+ * В данном классе переопределены методы Update и Delete, т.к. логика данных методов
+ * может различаться от класса к классу и не подлежит обобщению в рамках текущей системы.
+ * Также в данном классе переопределён метод Create, т.к. требуется явное указание параметров
+ * метода при отправки его контроллеру.
+ * Методы Get, GetAll не переопределены и используются из абстрактного класса.
+ * **/
+
 namespace oodb_project.controllers
 {
+    /// <summary>
+    /// Класс контроллера для таблицы HostController
+    /// </summary>
     public class HostController : BaseController<HostModel, HostDataModel>
     {
         private DbContext _db;
@@ -16,9 +31,11 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Обновление объекта Host
+        /// Обновление объекта в коллекции
         /// </summary>
-        public IResult Update(HostDataModel newData)
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public IResult Update(HostDataModel data)
         {
             if (_collection == null)
             {
@@ -27,45 +44,20 @@ namespace oodb_project.controllers
 
             try
             {
-                var data = _collection.Find(document => document.Id == ObjectId.Parse(newData.Id)).FirstOrDefault();
-                if (data == null)
+                var findObj = _collection.Find(document => document.Id == ObjectId.Parse(data.Id)).FirstOrDefault();
+                if (findObj == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта HostModel с Id = {newData.Id} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта HostModel с Id = {data.Id} не обнаружен в БД"));
                 }
 
-                var filter = Builders<HostModel>.Filter.Eq(s => s.Id, ObjectId.Parse(newData.Id));
+                var filter = Builders<HostModel>.Filter.Eq(s => s.Id, ObjectId.Parse(data.Id));
                 var update = Builders<HostModel>.Update
-                    .Set(s => s.Name, newData.Name)
-                    .Set(s => s.Url, newData.Url)
-                    .Set(s => s.IPv4, newData.IPv4)
-                    .Set(s => s.System, newData.System);
+                    .Set(s => s.Name, data.Name)
+                    .Set(s => s.Url, data.Url)
+                    .Set(s => s.IPv4, data.IPv4)
+                    .Set(s => s.System, data.System);
 
                 _collection.UpdateOne(filter, update);
-            }
-            catch (Exception e)
-            {
-                return Results.Json(new MessageModel(e.Message));
-            }
-
-            return Results.Json(newData);
-        }
-
-        /// <summary>
-        /// Создание объекта Host
-        /// </summary>
-        public IResult Create(HostDataModel data)
-        {
-            if (_collection == null)
-            {
-                return Results.Json(new MessageModel("Подключение к ООБД отсутствует"));
-            }
-
-            try
-            {
-                var entity = new HostModel(data.Name, data.Url, data.IPv4, data.System);
-                data.Id = entity.Id.ToString();
-
-                _collection.InsertOne(entity);
             }
             catch (Exception e)
             {
@@ -76,10 +68,20 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Метод для удаления модели
+        /// Создание нового объекта коллекции
         /// </summary>
-        /// <param name="id">Идентификатор модели</param>
-        /// <returns>Удалённая модель (данные, которые были до удаления в модели)</returns>
+        /// <param name="data">Данные объекта</param>
+        /// <returns>Созданный объект</returns>
+        public new IResult Create(HostDataModel data)
+        {
+            return base.Create(data);
+        }
+
+        /// <summary>
+        /// Удаление объекта коллекции
+        /// </summary>
+        /// <param name="id">Идентификатор объекта в коллекции</param>
+        /// <returns>Удалённый объект коллекции</returns>
         public new IResult Delete(string id)
         {
             if ((_collection == null) 

@@ -1,4 +1,9 @@
-﻿namespace oodb_project.constants
+﻿/*
+ * В данном файле располагаются все константы, которые используются
+ * для маршрутизации в рамках данного сервиса.
+ * **/
+
+namespace oodb_project.constants
 {
     public class ApiUrl
     {

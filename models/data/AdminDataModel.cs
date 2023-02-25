@@ -9,13 +9,14 @@ namespace oodb_project.models
     {
         public AdminDataModel() : base()
         {
+            Email = "";
         }
 
-        public AdminDataModel(string id, string email) : base(id)
+        public AdminDataModel(string? id, string? email) : base(id)
         {
             Email = email;
         }
 
-        public string Email { get; set; }
+        public string? Email { get; set; }
     }
 }

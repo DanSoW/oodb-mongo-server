@@ -1,8 +1,16 @@
 ﻿using oodb_mongo_server.database.context;
 using oodb_project.constants;
 
+/*
+ * В данном файле определён класс InitMongoController, который
+ * инициализирует все API-маршруты сервиса
+ * **/
+
 namespace oodb_project.controllers
 {
+    /// <summary>
+    /// Класс инициализирующий API-маршруты сервиса
+    /// </summary>
     public class InitMongoController
     {
         private static WebApplication? _app;
@@ -14,6 +22,9 @@ namespace oodb_project.controllers
             _db = db;
         }
 
+        /// <summary>
+        /// Метод инициализации маршрутов
+        /// </summary>
         public void InitRoutes()
         {
             if((_db == null) || (_app == null)) 
@@ -22,7 +33,7 @@ namespace oodb_project.controllers
             }
 
             /* ----------- */
-            /* CRUD операции для HostModel */
+            /* CRUD операции для Host */
             /* ----------- */
             var hostController = new HostController(_db);
             _app.MapPost(ApiUrl.API_SAVE_HOST, hostController.Create);

@@ -4,8 +4,20 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using oodb_mongo_server.controllers;
 
+/*
+ * В данном файле представлен класс MonitorAppController, 
+ * который является наследником абстрактного класса BaseController.
+ * Тип "входной" модели для данных, курсирующих внутри системы является MonitorAppModel
+ * Тип "выходной" модели для данных, возвращаемых пользователю является MonitorAppDataModel
+ * В данном классе переопределены методы Create, Update, Delete, Get и GetAll (т.е. все CRUD-операции), 
+ * так как логика отдельных операций для данного класса отличается от общей схемы (определяемая абстрактным классом)
+ * **/
+
 namespace oodb_project.controllers
 {
+    /// <summary>
+    /// Класс для контроллера таблицы MonitorApp
+    /// </summary>
     public class MonitorAppController : BaseController<MonitorAppModel, MonitorAppDataModel>
     {
         private DbContext _db;
@@ -16,9 +28,11 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Обновление объекта MonitorAppModel
+        /// Обновление объекта в коллекции
         /// </summary>
-        public IResult Update(MonitorAppDataModel newData)
+        /// <param name="data">Новые данные об объекте</param>
+        /// <returns>Обновлённый объект</returns>
+        public IResult Update(MonitorAppDataModel data)
         {
             if (_collection == null)
             {
@@ -27,28 +41,28 @@ namespace oodb_project.controllers
 
             try
             {
-                var monitorApp = _db.MonitorAppList.Find(document => document.Id == ObjectId.Parse(newData.Id)).FirstOrDefault();
+                var monitorApp = _db.MonitorAppList.Find(document => document.Id == ObjectId.Parse(data.Id)).FirstOrDefault();
                 if (monitorApp == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта MonitorAppModel с Id = {newData.Id} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта MonitorAppModel с Id = {data.Id} не обнаружен в БД"));
                 }
 
-                var host = _db.HostList.Find(document => document.Id == ObjectId.Parse(newData.HostId)).FirstOrDefault();
+                var host = _db.HostList.Find(document => document.Id == ObjectId.Parse(data.HostId)).FirstOrDefault();
                 if (host == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта HostModel с Id = {newData.HostId} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта HostModel с Id = {data.HostId} не обнаружен в БД"));
                 }
 
-                var admin = _db.AdminList.Find(document => document.Id == ObjectId.Parse(newData.AdminId)).FirstOrDefault();
+                var admin = _db.AdminList.Find(document => document.Id == ObjectId.Parse(data.AdminId)).FirstOrDefault();
                 if (admin == null)
                 {
-                    return Results.Json(new MessageModel($"Экземпляра объекта AdminModel с Id = {newData.AdminId} не обнаружен в БД"));
+                    return Results.Json(new MessageModel($"Экземпляра объекта AdminModel с Id = {data.AdminId} не обнаружен в БД"));
                 }
 
-                var filter = Builders<MonitorAppModel>.Filter.Eq(s => s.Id, ObjectId.Parse(newData.Id));
+                var filter = Builders<MonitorAppModel>.Filter.Eq(s => s.Id, ObjectId.Parse(data.Id));
                 var update = Builders<MonitorAppModel>.Update
-                    .Set(s => s.Name, newData.Name)
-                    .Set(s => s.Url, newData.Url)
+                    .Set(s => s.Name, data.Name)
+                    .Set(s => s.Url, data.Url)
                     .Set(s => s.Host, host)
                     .Set(s => s.Admin, admin);
 
@@ -59,13 +73,15 @@ namespace oodb_project.controllers
                 return Results.Json(new MessageModel(e.Message));
             }
 
-            return Results.Json(newData);
+            return Results.Json(data);
         }
 
         /// <summary>
-        /// Создание объекта MonitorAppModel
+        /// Создание объекта в коллекции
         /// </summary>
-        public IResult Create(MonitorAppDataModel data)
+        /// <param name="data">Данные об объекте</param>
+        /// <returns>Созданный объект</returns>
+        public new IResult Create(MonitorAppDataModel data)
         {
             if (_collection == null)
             {
@@ -100,8 +116,10 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Получение объекта
+        /// Получение конкретного объекта из коллекции
         /// </summary>
+        /// <param name="id">Идентификатор объекта в коллекции</param>
+        /// <returns>Объект коллекции</returns>
         public new IResult Get(string id)
         {
             if (_collection == null)
@@ -129,8 +147,9 @@ namespace oodb_project.controllers
         }
 
         /// <summary>
-        /// Получение всех объектов MonitorAppModel
+        /// Получение списка объектов в коллекции
         /// </summary>
+        /// <returns>Список объектов в коллекции</returns>
         public new IResult GetAll()
         {
             if (_collection == null)
